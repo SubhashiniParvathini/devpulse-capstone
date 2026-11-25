@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevPulse - AI Standup & Blocker Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-6 max-w-4xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-indigo-600">🚀 DevPulse</h1>
+            <p class="text-gray-600">AI-Powered Developer Standup & Roadblock Assistant</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">📌 Submit Standup</h2>
+                <form id="standupForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Yesterday's Work</label>
+                        <textarea id="yesterday" rows="3" required class="w-full mt-1 p-2 border rounded-md"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Today's Plan</label>
+                        <textarea id="today" rows="3" required class="w-full mt-1 p-2 border rounded-md"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded-md hover:bg-indigo-700">Submit Standup</button>
+                </form>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">⚠️ Report Technical Blocker</h2>
+                <form id="blockerForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Blocker Title</label>
+                        <input type="text" id="blockerTitle" required class="w-full mt-1 p-2 border rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Error Log / Stack Trace</label>
+                        <textarea id="errorLog" rows="2" class="w-full mt-1 p-2 border rounded-md" placeholder="e.g. SyntaxError or ETIMEDOUT"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-red-600 text-white p-2 rounded-md hover:bg-red-700">Report Blocker & Get AI Help</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-3 text-gray-800">📋 Team Standups</h3>
+                <div id="standupFeed" class="space-y-3 text-sm text-gray-600">Loading...</div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-3 text-gray-800">🤖 Active Blockers & AI Suggestions</h3>
+                <div id="blockerFeed" class="space-y-3 text-sm text-gray-600">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        async function loadData() {
+            try {
+                const resS = await fetch(`${API_URL}/standups`);
+                const standups = await resS.json();
+                document.getElementById('standupFeed').innerHTML = standups.length ? standups.map(s => `
+                    <div class="p-3 bg-gray-50 rounded border">
+                        <p><strong>Yesterday:</strong> ${s.yesterday_work}</p>
+                        <p><strong>Today:</strong> ${s.today_plan}</p>
+                        <span class="text-xs text-gray-400">${new Date(s.created_at).toLocaleString()}</span>
+                    </div>
+                `).join('') : '<p>No standups yet.</p>';
+
+                const resB = await fetch(`${API_URL}/blockers`);
+                const blockers = await resB.json();
+                document.getElementById('blockerFeed').innerHTML = blockers.length ? blockers.map(b => `
+                    <div class="p-3 bg-red-50 rounded border border-red-200">
+                        <p><strong>${b.title}</strong> (${b.status})</p>
+                        <p class="text-xs text-gray-500 font-mono">Error: ${b.error_log || 'None'}</p>
+                        <p class="text-xs text-indigo-700 bg-indigo-50 p-2 mt-1 rounded">💡 <strong>AI:</strong> ${b.ai_suggestion}</p>
+                    </div>
+                `).join('') : '<p>No blockers reported.</p>';
+            } catch (err) {
+                console.error('Error loading data', err);
+            }
+        }
+
+        document.getElementById('standupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch(`${API_URL}/standups`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    yesterdayWork: document.getElementById('yesterday').value,
+                    todayPlan: document.getElementById('today').value
+                })
+            });
+            document.getElementById('standupForm').reset();
+            loadData();
+        });
+
+        document.getElementById('blockerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch(`${API_URL}/blockers`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: document.getElementById('blockerTitle').value,
+                    errorLog: document.getElementById('errorLog').value
+                })
+            });
+            document.getElementById('blockerForm').reset();
+            loadData();
+        });
+
+        loadData();
+    </script>
+</body>
+</html>
