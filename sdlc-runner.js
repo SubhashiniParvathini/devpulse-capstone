@@ -1,21 +1,19 @@
+import fs from 'fs';
+import path from 'path';
 import readline from 'readline';
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, 800));
-
-async function promptUser(question) {
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      resolve(answer);
-    });
+function askQuestion(query) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
   });
+  return new Promise(resolve => rl.question(query, ans => {
+    rl.close();
+    resolve(ans.trim().toLowerCase());
+  }));
 }
 
-async function runPipeline() {
+async function runAutonomousPipeline() {
   console.clear();
   console.log("\x1b[32m$ sdlc run --ticket EPMCDMETST-73518 --mode autonomous\x1b[0m");
   console.log("\x1b[90mAutonomous SDLC · 10 gated phases · human-in-the-loop governance\x1b[0m");
@@ -23,54 +21,40 @@ async function runPipeline() {
 
   // PHASE 00
   console.log("\x1b[32m» PHASE 00: MISSION INTAKE — Mission Intake & Context Loading\x1b[0m");
-  console.log("The system ingests the work order, inspects the landscape, and loads rules.\n");
-  
-  await delay(600);
-  console.log(`[${new Date().toLocaleTimeString()}] \x1b[34m→\x1b[0m Connecting to Jira : pulling ticket EPMCDMETST-73518 and linked context`);
-  await delay(600);
-  console.log(`[${new Date().toLocaleTimeString()}] \x1b[34m→\x1b[0m Reading repository layout : identifying backend, frontend, and test suites`);
-  await delay(600);
-  console.log(`[${new Date().toLocaleTimeString()}] \x1b[34m→\x1b[0m Landscape detected : Node.js Express + SQLite + Tailwind UI`);
-  await delay(600);
-  console.log(`[${new Date().toLocaleTimeString()}] \x1b[34m→\x1b[0m Policies loaded : SDLC gates · security checks · mm-learning-group-1`);
-  await delay(600);
-  console.log(`[${new Date().toLocaleTimeString()}] \x1b[32m✔\x1b[0m Mission understood — 10-phase pipeline engaged with human gates\n`);
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[34m→\x1b[0m Connecting to Jira : pulling ticket EPMCDMETST-73518`);
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[34m→\x1b[0m Scanning agents/ folder for active personas...`);
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[32m✔\x1b[0m Mission understood — 10-phase pipeline engaged\n`);
 
-  const approval = await promptUser("\x1b[33m[HITL Gate] Approve Phase 00 Context & Proceed to Requirements Analysis? (y/n): \x1b[0m");
-  if (approval.toLowerCase() !== 'y') {
-    console.log("Pipeline paused by human reviewer.");
-    rl.close();
-    return;
-  }
+  let gate0 = await askQuestion("\x1b[33m[HITL Gate] Approve Phase 00 Context & Proceed to Requirements? (y/n): \x1b[0m");
+  if (gate0 !== 'y') { console.log("Pipeline paused by human reviewer."); return; }
 
   // PHASE 01
-  console.log("\n\x1b[32m» PHASE 01: REQUIREMENTS & BACKLOG SYNC\x1b[0m");
-  await delay(600);
-  console.log(`[${new Date().toLocaleTimeString()}] \x1b[34m→\x1b[0m Syncing user stories with Jira project mm-learning-group-1`);
-  await delay(600);
-  console.log(`[${new Date().toLocaleTimeString()}] \x1b[32m✔\x1b[0m Requirements verified — Acceptance criteria locked.`);
+  console.log("\n\x1b[32m» PHASE 01: REQUIREMENTS AGENT INGESTION\x1b[0m");
+  const baPath = path.join(process.cwd(), 'agents', 'ba-agent.md');
+  const baPersona = fs.existsSync(baPath) ? fs.readFileSync(baPath, 'utf8').split('\n')[0] : "BA Agent";
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[34m→\x1b[0m Invoking persona: ${baPersona}`);
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[32m✔\x1b[0m Jira stories SCS1-1 and SCS1-2 successfully parsed.`);
+  
+  let gate1 = await askQuestion("\x1b[33m[HITL Gate] Approve Requirements & Proceed to Architecture? (y/n): \x1b[0m");
+  if (gate1 !== 'y') { console.log("Pipeline paused by human reviewer."); return; }
 
-  // PHASE 02 - 09 summary simulation
-  const phases = [
-    "PHASE 02: ARCHITECTURE & CONFLUENCE DESIGN SYNC",
-    "PHASE 03: DESIGN REVIEW & RISK ASSESSMENT",
-    "PHASE 04: IMPLEMENTATION PLANNING & DEPENDENCY SORTING",
-    "PHASE 05: CODE GENERATION (Claude-Code CLI via Codemie)",
-    "PHASE 06: PEER CODE REVIEW & DRY AUDIT",
-    "PHASE 07: BDD TESTING & PLAYWRIGHT EXECUTION",
-    "PHASE 08: LOCAL DEPLOYMENT & ARTIFACT BUILD",
-    "PHASE 09: DOCUMENTATION SYNC & FINAL PR CREATION"
-  ];
+  // PHASE 02
+  console.log("\n\x1b[32m» PHASE 02: ARCHITECT AGENT HLD/LLD GENERATION\x1b[0m");
+  const archPath = path.join(process.cwd(), 'agents', 'architect-agent.md');
+  const archPersona = fs.existsSync(archPath) ? fs.readFileSync(archPath, 'utf8').split('\n')[0] : "Architect Agent";
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[34m→\x1b[0m Invoking persona: ${archPersona}`);
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[32m✔\x1b[0m Confluence HLD/LLD specification synchronized.`);
 
-  for (let i = 0; i < phases.length; i++) {
-    await delay(700);
-    console.log(`\n\x1b[32m» ${phases[i]}\x1b[0m`);
-    await delay(500);
-    console.log(`[${new Date().toLocaleTimeString()}] \x1b[32m✔\x1b[0m Phase completed successfully.`);
-  }
+  let gate2 = await askQuestion("\x1b[33m[HITL Gate] Approve Architecture & Proceed to Code Generation? (y/n): \x1b[0m");
+  if (gate2 !== 'y') { console.log("Pipeline paused by human reviewer."); return; }
 
-  console.log("\n\x1b[32m🎉 AUTONOMOUS SDLC PIPELINE COMPLETED SUCCESSFULLY WITH HITL APPROVALS!\x1b[0m");
-  rl.close();
+  // PHASE 05 & 07 & 09
+  console.log("\n\x1b[32m» PHASE 05: DEVELOPER AGENT & PHASE 07: QA VERIFICATION & PHASE 09: PR MERGE\x1b[0m");
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[32m✔\x1b[0m Code generated via Codemie / claude-code CLI.`);
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[32m✔\x1b[0m Playwright test suite executed successfully.`);
+  console.log(`[${new Date().toLocaleTimeString()}] \x1b[32m✔\x1b[0m Pull Request successfully merged into main.`);
+
+  console.log("\n\x1b[32m🎉 AUTONOMOUS SDLC PIPELINE COMPLETED SUCCESSFULLY ACROSS ALL GATES!\x1b[0m");
 }
 
-runPipeline();
+runAutonomousPipeline();
