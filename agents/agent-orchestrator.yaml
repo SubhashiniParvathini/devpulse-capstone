@@ -1,0 +1,19 @@
+version: "2.0"
+project: "DevPulse - Multi-Agentic SDLC Pipeline"
+pipeline_orchestration:
+  - step: 1
+    agent: "Business Analyst (BA) Agent"
+    role: "Jira Backlog Ingestion & Requirements Parsing"
+    status: "Completed"
+  - step: 2
+    agent: "System Architect Agent"
+    role: "HLD/LLD Generation & Confluence Documentation"
+    status: "Completed"
+  - step: 3
+    agent: "Full-Stack Developer Agent"
+    role: "Backend API & Frontend UI Code Generation"
+    status: "Completed"
+  - step: 4
+    agent: "QA & BDD Testing Agent"
+    role: "Gherkin Test Feature File Generation"
+    status: "Completed"
